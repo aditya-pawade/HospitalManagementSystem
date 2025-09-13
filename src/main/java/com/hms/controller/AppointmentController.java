@@ -3,6 +3,8 @@ package com.hms.controller;
 import com.hms.dto.AppointmentDTO;
 import com.hms.entity.Appointment;
 import com.hms.service.AppointmentService;
+import com.util.AuthUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +18,21 @@ public class AppointmentController {
 	@Autowired
 	private AppointmentService appointmentService;
 
+	// For ADMIN/STAFF to create appointment
 	@PostMapping
 	public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
+		Appointment saved = appointmentService.saveAppointment(appointment);
+		return ResponseEntity.ok(saved);
+	}
+
+	// For PATIENT to book appointment
+	@PostMapping("/book")
+	public ResponseEntity<?> bookAppointment(@RequestBody Appointment appointment, @RequestHeader("role") String role) {
+
+		if (!AuthUtil.hasRole("PATIENT", role)) {
+			return ResponseEntity.status(403).body("❌ Only PATIENT can book appointments!");
+		}
+
 		Appointment saved = appointmentService.saveAppointment(appointment);
 		return ResponseEntity.ok(saved);
 	}
@@ -44,16 +59,19 @@ public class AppointmentController {
 		return ResponseEntity.ok(appointmentService.getAllAppointmentDTOs());
 	}
 
-	
-	@PatchMapping("/{id}/status")
-	public ResponseEntity<Appointment> updateAppointmentStatus(@PathVariable Long id, @RequestParam String status) {
+	// For DOCTOR to update status
+	@PutMapping("/{id}/status")
+	public ResponseEntity<?> updateAppointmentStatus(@PathVariable Long id, @RequestHeader("role") String role,
+			@RequestParam String status) {
 
-		Appointment existing = appointmentService.getAppointmentById(id)
-				.orElseThrow(() -> new RuntimeException("Appointment not found"));
+		if (!AuthUtil.hasRole("DOCTOR", role)) {
+			return ResponseEntity.status(403).body("Only DOCTOR can update status!");
+		}
 
-		existing.setStatus(status);
-		Appointment updated = appointmentService.saveAppointment(existing);
-
-		return ResponseEntity.ok(updated);
+		return appointmentService.getAppointmentById(id).map(app -> {
+			app.setStatus(status);
+			Appointment updated = appointmentService.saveAppointment(app);
+			return ResponseEntity.ok(updated);
+		}).orElse(ResponseEntity.notFound().build());
 	}
 }

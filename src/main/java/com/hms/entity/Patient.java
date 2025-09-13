@@ -7,10 +7,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "patients")
-//@Data   // Lombok shortcut: generates getter, setter, toString, equals, hashCode
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "appointments")
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +25,7 @@ public class Patient {
 	private String address;
 	private String phone;
 
-	@OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JsonManagedReference("patient-appointments")
 	private List<Appointment> appointments;
 
