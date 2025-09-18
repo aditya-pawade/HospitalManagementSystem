@@ -1,32 +1,37 @@
+
 package com.hms.entity;
 
-import java.util.List;
-import javax.persistence.*;
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import java.util.List;
 
 @Entity
 @Table(name = "patients")
 @Getter
 @Setter
-@ToString(exclude = "appointments")
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(exclude = "appointments")
 public class Patient {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	private String name;
-	private int age;
-	private String gender;
-	private String address;
-	private String phone;
+    @NotBlank(message = "Patient name is required")
+    private String name;
 
-	@OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@JsonManagedReference("patient-appointments")
-	private List<Appointment> appointments;
+    private int age;
 
+    private String gender;
+
+    private String address;
+
+    @Pattern(regexp = "\\d{10}", message = "Phone must be 10 digits")
+    private String phone;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Appointment> appointments;
 }

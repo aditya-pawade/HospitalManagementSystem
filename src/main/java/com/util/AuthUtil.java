@@ -1,25 +1,10 @@
+
 package com.util;
 
 public class AuthUtil {
-
-	// Check if role is allowed
-	public static boolean hasRole(String requiredRole, String currentRole) {
-		if (currentRole == null) {
-			return false; // no role provided
-		}
-		return requiredRole.equalsIgnoreCase(currentRole);
-	}
-
-	// Optional: check multiple roles
-	public static boolean hasAnyRole(String[] allowedRoles, String currentRole) {
-		if (currentRole == null) {
-			return false;
-		}
-		for (String role : allowedRoles) {
-			if (role.equalsIgnoreCase(currentRole)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    public static boolean hasRole(String required, String actual) {
+        if (required == null) return false;
+        if (actual == null) return false;
+        return required.equalsIgnoreCase(actual.trim());
+    }
 }

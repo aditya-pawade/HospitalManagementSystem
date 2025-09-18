@@ -1,20 +1,22 @@
+
 package com.hms.service.impl;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import com.hms.entity.Doctor;
 import com.hms.repository.DoctorRepository;
 import com.hms.service.DoctorService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DoctorServiceImpl implements DoctorService {
 
-    @Autowired
-    private DoctorRepository doctorRepository;
+    private final DoctorRepository doctorRepository;
+
+    public DoctorServiceImpl(DoctorRepository doctorRepository) {
+        this.doctorRepository = doctorRepository;
+    }
 
     @Override
     public Doctor saveDoctor(Doctor doctor) {

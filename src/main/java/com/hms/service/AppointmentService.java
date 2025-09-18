@@ -1,19 +1,16 @@
+
 package com.hms.service;
 
-import com.hms.entity.Appointment;
 import com.hms.dto.AppointmentDTO;
-
+import com.hms.enums.AppointmentStatus;
 import java.util.List;
-import java.util.Optional;
 
 public interface AppointmentService {
-	Appointment saveAppointment(Appointment appointment);
-
-	List<Appointment> getAllAppointments();
-
-	Optional<Appointment> getAppointmentById(Long id);
-
-	void deleteAppointment(Long id);
-
-	List<AppointmentDTO> getAllAppointmentDTOs();
+    AppointmentDTO createAppointment(AppointmentDTO dto);
+    java.util.List<AppointmentDTO> getAllAppointments();
+    AppointmentDTO getAppointmentById(Long id);
+    java.util.List<AppointmentDTO> getAppointmentsByDoctor(Long doctorId);
+    java.util.List<AppointmentDTO> getAppointmentsByPatient(Long patientId);
+    AppointmentDTO updateAppointmentStatus(Long id, AppointmentStatus status);
+    void deleteAppointment(Long id);
 }

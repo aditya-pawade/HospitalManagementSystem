@@ -1,77 +1,85 @@
+
 package com.hms.controller;
 
 import com.hms.dto.AppointmentDTO;
-import com.hms.entity.Appointment;
+import com.hms.enums.AppointmentStatus;
 import com.hms.service.AppointmentService;
 import com.util.AuthUtil;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
 
-	@Autowired
-	private AppointmentService appointmentService;
+    private final AppointmentService appointmentService;
 
-	// For ADMIN/STAFF to create appointment
-	@PostMapping
-	public ResponseEntity<Appointment> createAppointment(@RequestBody Appointment appointment) {
-		Appointment saved = appointmentService.saveAppointment(appointment);
-		return ResponseEntity.ok(saved);
-	}
+    public AppointmentController(AppointmentService appointmentService) {
+        this.appointmentService = appointmentService;
+    }
 
-	// For PATIENT to book appointment
-	@PostMapping("/book")
-	public ResponseEntity<?> bookAppointment(@RequestBody Appointment appointment, @RequestHeader("role") String role) {
+    @PostMapping
+    public ResponseEntity<?> create(@Valid @RequestBody AppointmentDTO dto, @RequestHeader(value = "role", required = false) String role) {
+        if (!AuthUtil.hasRole("PATIENT", role)) {
+            return ResponseEntity.status(403).body("Only PATIENT can book appointments!");
+        }
+        return ResponseEntity.ok(appointmentService.createAppointment(dto));
+    }
 
-		if (!AuthUtil.hasRole("PATIENT", role)) {
-			return ResponseEntity.status(403).body("❌ Only PATIENT can book appointments!");
-		}
+    @GetMapping
+    public ResponseEntity<List<AppointmentDTO>> getAll() {
+        return ResponseEntity.ok(appointmentService.getAllAppointments());
+    }
 
-		Appointment saved = appointmentService.saveAppointment(appointment);
-		return ResponseEntity.ok(saved);
-	}
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(appointmentService.getAppointmentById(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
-	@GetMapping
-	public ResponseEntity<List<Appointment>> getAllAppointments() {
-		return ResponseEntity.ok(appointmentService.getAllAppointments());
-	}
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<AppointmentDTO>> byDoctor(@PathVariable Long doctorId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(doctorId));
+    }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<Appointment> getAppointmentById(@PathVariable Long id) {
-		return appointmentService.getAppointmentById(id).map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
-	}
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<List<AppointmentDTO>> byPatient(@PathVariable Long patientId) {
+        return ResponseEntity.ok(appointmentService.getAppointmentsByPatient(patientId));
+    }
 
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
-		appointmentService.deleteAppointment(id);
-		return ResponseEntity.noContent().build();
-	}
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status, @RequestHeader(value = "role", required = false) String role) {
+        if (!(AuthUtil.hasRole("DOCTOR", role) || AuthUtil.hasRole("ADMIN", role))) {
+            return ResponseEntity.status(403).body("Only DOCTOR or ADMIN can update status!");
+        }
+        try {
+            AppointmentStatus as = AppointmentStatus.valueOf(status.toUpperCase());
+            return ResponseEntity.ok(appointmentService.updateAppointmentStatus(id, as));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid status. Use REQUESTED/APPROVED/REJECTED/COMPLETED");
+        }
+    }
 
-	@GetMapping("/dtos")
-	public ResponseEntity<List<AppointmentDTO>> getAllAppointmentDTOs() {
-		return ResponseEntity.ok(appointmentService.getAllAppointmentDTOs());
-	}
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<?> complete(@PathVariable Long id, @RequestHeader(value = "role", required = false) String role) {
+        if (!AuthUtil.hasRole("DOCTOR", role)) {
+            return ResponseEntity.status(403).body("Only DOCTOR can mark completed!");
+        }
+        return ResponseEntity.ok(appointmentService.updateAppointmentStatus(id, AppointmentStatus.COMPLETED));
+    }
 
-	// For DOCTOR to update status
-	@PutMapping("/{id}/status")
-	public ResponseEntity<?> updateAppointmentStatus(@PathVariable Long id, @RequestHeader("role") String role,
-			@RequestParam String status) {
-
-		if (!AuthUtil.hasRole("DOCTOR", role)) {
-			return ResponseEntity.status(403).body("Only DOCTOR can update status!");
-		}
-
-		return appointmentService.getAppointmentById(id).map(app -> {
-			app.setStatus(status);
-			Appointment updated = appointmentService.saveAppointment(app);
-			return ResponseEntity.ok(updated);
-		}).orElse(ResponseEntity.notFound().build());
-	}
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id, @RequestHeader(value = "role", required = false) String role) {
+        if (!AuthUtil.hasRole("ADMIN", role)) {
+            return ResponseEntity.status(403).body("Only ADMIN can delete appointments!");
+        }
+        appointmentService.deleteAppointment(id);
+        return ResponseEntity.noContent().build();
+    }
 }

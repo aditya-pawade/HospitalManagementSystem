@@ -1,35 +1,39 @@
+
 package com.hms.entity;
 
-import java.time.LocalDateTime;
-import javax.persistence.*;
+import com.hms.enums.AppointmentStatus;
 import lombok.*;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "appointments")
 @Getter
 @Setter
-@ToString
-@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Appointment {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-	private LocalDateTime appointmentDate;
-	private String status; // e.g., Scheduled, Completed, Cancelled
+    @ManyToOne
+    @JoinColumn(name = "patient_id", nullable = false)
+    private Patient patient;
 
-	@ManyToOne
-	@JoinColumn(name = "patient_id", nullable = false)
-	@JsonBackReference("patient-appointments")   // match with Patient.java
-	private Patient patient;
+    @ManyToOne
+    @JoinColumn(name = "doctor_id", nullable = false)
+    private Doctor doctor;
 
-	@ManyToOne
-	@JoinColumn(name = "doctor_id", nullable = false)
-	@JsonBackReference("doctor-appointments")   // match with Doctor.java
-	private Doctor doctor;
+    @NotNull(message = "Appointment date & time cannot be null")
+    @FutureOrPresent(message = "Appointment date must be present or future")
+    private LocalDateTime appointmentDateTime;
 
+    @Enumerated(EnumType.STRING)
+    private AppointmentStatus status = AppointmentStatus.REQUESTED;
 }
