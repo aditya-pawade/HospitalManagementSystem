@@ -1,8 +1,6 @@
-
 package com.hms.service;
-
-import com.hms.dto.BillDTO;
-
+import com.hms.entity.Bill; import java.util.List;
 public interface BillService {
-    com.hms.dto.BillDTO createBill(com.hms.dto.BillDTO dto);
+    Bill create(Bill b);
+    List<Bill> findByPatient(Long patientId);
 }

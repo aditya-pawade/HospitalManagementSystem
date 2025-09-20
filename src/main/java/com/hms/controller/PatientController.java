@@ -1,61 +1,29 @@
-
 package com.hms.controller;
-
 import com.hms.entity.Patient;
 import com.hms.service.PatientService;
-import com.util.AuthUtil;
-import org.springframework.http.ResponseEntity;
+import com.hms.dto.PatientDTO;
+import com.hms.util.AuthUtil;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/patients")
 public class PatientController {
-
-    private final PatientService patientService;
-
-    public PatientController(PatientService patientService) {
-        this.patientService = patientService;
-    }
+    private final PatientService service;
+    public PatientController(PatientService service){ this.service = service; }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Patient patient, @RequestHeader(value = "role", required = false) String role) {
-        if (!AuthUtil.hasRole("ADMIN", role)) {
-            return ResponseEntity.status(403).body("Only ADMIN can add patients!");
-        }
-        return ResponseEntity.ok(patientService.savePatient(patient));
+    public ResponseEntity<?> create(@RequestBody Patient p, @RequestHeader(value="role", required=false) String role){
+        if(!AuthUtil.hasRole("ADMIN", role)) return ResponseEntity.status(403).body("Only ADMIN can add patients");
+        return ResponseEntity.ok(toDto(service.savePatient(p)));
     }
 
     @GetMapping
-    public ResponseEntity<List<Patient>> getAll() {
-        return ResponseEntity.ok(patientService.getAllPatients());
+    public ResponseEntity<List<PatientDTO>> all(@RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size){
+        return ResponseEntity.ok(service.getAllPatients(page,size).stream().map(this::toDto).collect(Collectors.toList()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> get(@PathVariable Long id) {
-        return patientService.getPatientById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Patient patient, @RequestHeader(value = "role", required = false) String role) {
-        if (!(AuthUtil.hasRole("PATIENT", role) || AuthUtil.hasRole("ADMIN", role))) {
-            return ResponseEntity.status(403).body("Only PATIENT or ADMIN can update!");
-        }
-        return patientService.getPatientById(id).map(existing -> {
-            existing.setAddress(patient.getAddress());
-            existing.setPhone(patient.getPhone());
-            return ResponseEntity.ok(patientService.savePatient(existing));
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id, @RequestHeader(value = "role", required = false) String role) {
-        if (!AuthUtil.hasRole("ADMIN", role)) {
-            return ResponseEntity.status(403).body("Only ADMIN can delete!");
-        }
-        patientService.deletePatient(id);
-        return ResponseEntity.noContent().build();
-    }
+    private PatientDTO toDto(Patient p){ PatientDTO dto = new PatientDTO(); dto.setId(p.getId()); dto.setName(p.getName()); dto.setAge(p.getAge()); dto.setAddress(p.getAddress()); dto.setGender(p.getGender()); dto.setPhone(p.getPhone()); return dto; }
 }

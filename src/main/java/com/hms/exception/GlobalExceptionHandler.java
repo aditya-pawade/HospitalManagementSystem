@@ -1,22 +1,16 @@
-
 package com.hms.exception;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-@RestControllerAdvice
+import org.springframework.http.ResponseEntity;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+@ControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
-        return ResponseEntity.badRequest().body(ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<?> handleRuntime(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> handle(Exception ex){
+        HashMap<String,Object> m = new HashMap<>();
+        m.put("timestamp", LocalDateTime.now().toString());
+        m.put("error", ex.getMessage());
+        return ResponseEntity.status(500).body(m);
     }
 }

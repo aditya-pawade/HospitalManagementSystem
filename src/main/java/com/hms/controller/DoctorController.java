@@ -1,62 +1,36 @@
-
 package com.hms.controller;
-
 import com.hms.entity.Doctor;
 import com.hms.service.DoctorService;
-import com.util.AuthUtil;
-import org.springframework.http.ResponseEntity;
+import com.hms.dto.DoctorDTO;
+import com.hms.util.AuthUtil;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/doctors")
 public class DoctorController {
-
-    private final DoctorService doctorService;
-
-    public DoctorController(DoctorService doctorService) {
-        this.doctorService = doctorService;
-    }
+    private final DoctorService service;
+    public DoctorController(DoctorService service){ this.service = service; }
 
     @PostMapping
-    public ResponseEntity<?> create(@Valid @RequestBody Doctor doctor, @RequestHeader(value = "role", required = false) String role) {
-        if (!AuthUtil.hasRole("ADMIN", role)) {
-            return ResponseEntity.status(403).body("Only ADMIN can add doctors!");
-        }
-        return ResponseEntity.ok(doctorService.saveDoctor(doctor));
+    public ResponseEntity<?> create(@RequestBody Doctor doctor, @RequestHeader(value="role", required=false) String role){
+        if(!AuthUtil.hasRole("ADMIN", role)) return ResponseEntity.status(403).body("Only ADMIN can add doctors");
+        if(doctor.getStatus()==null) doctor.setStatus("PENDING");
+        return ResponseEntity.ok(toDto(service.saveDoctor(doctor)));
     }
 
     @GetMapping
-    public ResponseEntity<List<Doctor>> getAll() {
-        return ResponseEntity.ok(doctorService.getAllDoctors());
+    public ResponseEntity<List<DoctorDTO>> all(@RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="20") int size){
+        return ResponseEntity.ok(service.getAllDoctors(page,size).stream().map(this::toDto).collect(Collectors.toList()));
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<?> get(@PathVariable Long id) {
-        return doctorService.getDoctorById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<?> approve(@PathVariable Long id, @RequestHeader(value="role", required=false) String role){
+        if(!AuthUtil.hasRole("ADMIN", role)) return ResponseEntity.status(403).body("Only ADMIN can approve");
+        return ResponseEntity.ok(toDto(service.approveDoctor(id)));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Doctor doctor, @RequestHeader(value = "role", required = false) String role) {
-        if (!(AuthUtil.hasRole("DOCTOR", role) || AuthUtil.hasRole("ADMIN", role))) {
-            return ResponseEntity.status(403).body("Only DOCTOR or ADMIN can update!");
-        }
-        return doctorService.getDoctorById(id).map(existing -> {
-            existing.setSpecialization(doctor.getSpecialization());
-            existing.setPhone(doctor.getPhone());
-            existing.setEmail(doctor.getEmail());
-            return ResponseEntity.ok(doctorService.saveDoctor(existing));
-        }).orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id, @RequestHeader(value = "role", required = false) String role) {
-        if (!AuthUtil.hasRole("ADMIN", role)) {
-            return ResponseEntity.status(403).body("Only ADMIN can delete!");
-        }
-        doctorService.deleteDoctor(id);
-        return ResponseEntity.noContent().build();
-    }
+    private DoctorDTO toDto(Doctor d){ DoctorDTO dto = new DoctorDTO(); dto.setId(d.getId()); dto.setName(d.getName()); dto.setSpecialization(d.getSpecialization()); dto.setPhone(d.getPhone()); dto.setEmail(d.getEmail()); dto.setStatus(d.getStatus()); return dto; }
 }

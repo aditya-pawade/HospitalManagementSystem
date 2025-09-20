@@ -1,8 +1,6 @@
-
 package com.hms.service;
-
-import com.hms.dto.PrescriptionDTO;
-
+import com.hms.entity.Prescription; import java.util.List;
 public interface PrescriptionService {
-    com.hms.dto.PrescriptionDTO createPrescription(Long appointmentId, PrescriptionDTO dto);
+    Prescription create(Prescription p);
+    List<Prescription> findByPatient(Long patientId);
 }

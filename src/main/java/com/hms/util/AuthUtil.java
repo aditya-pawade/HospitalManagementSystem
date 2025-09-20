@@ -1,0 +1,1 @@
+package com.hms.util; public class AuthUtil { public static boolean hasRole(String required, String actual){ if(required==null) return false; if(actual==null) return false; return required.equalsIgnoreCase(actual.trim()); } }

@@ -1,9 +1,1 @@
-
-package com.hms.enums;
-
-public enum AppointmentStatus {
-    REQUESTED,
-    APPROVED,
-    REJECTED,
-    COMPLETED
-}
+package com.hms.enums; public enum AppointmentStatus { REQUESTED, APPROVED, REJECTED, COMPLETED, CANCELLED }

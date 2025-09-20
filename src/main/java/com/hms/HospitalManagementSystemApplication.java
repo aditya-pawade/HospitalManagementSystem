@@ -1,4 +1,3 @@
-
 package com.hms;
 
 import org.springframework.boot.SpringApplication;

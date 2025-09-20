@@ -1,0 +1,1 @@
+package com.hms.dto; import lombok.*; @Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString public class PatientDTO { private Long id; private String name; private Integer age; private String gender; private String address; private String phone; }

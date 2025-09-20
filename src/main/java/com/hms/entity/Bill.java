@@ -1,29 +1,15 @@
-
 package com.hms.entity;
-
 import lombok.*;
-
 import javax.persistence.*;
 import java.math.BigDecimal;
-
-@Entity
-@Table(name = "bills")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@ToString
+import com.hms.enums.PaymentStatus;
+@Entity @Table(name = "bills")
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @ToString
 public class Bill {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @OneToOne
-    @JoinColumn(name = "appointment_id", nullable = false)
-    private Appointment appointment;
-
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    private Long appointmentId;
+    private Long patientId;
     private BigDecimal amount;
-
-    private String status; // PAID / UNPAID / PENDING
+    @Enumerated(EnumType.STRING) private PaymentStatus status = PaymentStatus.PENDING;
+    private String transactionRef;
 }
