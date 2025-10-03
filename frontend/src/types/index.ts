@@ -2,7 +2,12 @@ export interface User {
   id: number;
   username: string;
   password?: string;
-  role: 'ADMIN' | 'DOCTOR' | 'RECEPTIONIST';
+  role: 'ADMIN' | 'DOCTOR' | 'RECEPTIONIST' | 'PATIENT';
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
 }
 
 export interface Patient {
@@ -65,9 +70,15 @@ export interface ApiResponse<T> {
   success: boolean;
   message: string;
   data?: T;
+  error?: string;
 }
 
 // Form data types
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
 export interface LoginFormData {
   username: string;
   password: string;

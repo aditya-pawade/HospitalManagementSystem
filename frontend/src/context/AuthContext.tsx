@@ -25,6 +25,7 @@ interface AuthContextType extends AuthState {
   hasRole: (role: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
   clearError: () => void;
+  updateUser: (userData: Partial<User>) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -159,6 +160,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
+  const updateUser = async (userData: Partial<User>): Promise<boolean> => {
+    try {
+      // This would typically make an API call to update user data
+      // For now, just update the local state
+      if (state.user) {
+        const updatedUser = { ...state.user, ...userData };
+        dispatch({ type: 'SET_USER', payload: updatedUser });
+        toast.success('Profile updated successfully');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      toast.error('Failed to update profile');
+      return false;
+    }
+  };
+
   const value: AuthContextType = {
     ...state,
     login,
@@ -166,6 +184,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     hasRole,
     hasAnyRole,
     clearError,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

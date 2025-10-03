@@ -59,12 +59,14 @@ export const apiRequest = async <T>(
     const response = await request();
     return {
       success: true,
+      message: 'Success',
       data: response.data,
     };
   } catch (error: any) {
     const message = error.response?.data?.message || error.message || 'An error occurred';
     return {
       success: false,
+      message: message,
       error: message,
     };
   }

@@ -8,7 +8,7 @@ interface SignupFormData {
   username: string;
   password: string;
   confirmPassword: string;
-  role: 'PATIENT' | 'DOCTOR' | 'RECEPTIONIST';
+  role: 'PATIENT' | 'DOCTOR' | 'RECEPTIONIST' | 'ADMIN';
   email: string;
   name: string;
   phone: string;
@@ -39,6 +39,7 @@ const SignupPage: React.FC = () => {
     { value: 'PATIENT', label: 'Patient', description: 'Book appointments and manage health records' },
     { value: 'DOCTOR', label: 'Doctor', description: 'Manage patients and appointments' },
     { value: 'RECEPTIONIST', label: 'Receptionist', description: 'Manage hospital operations' },
+    { value: 'ADMIN', label: 'Admin', description: 'Full system administration and management' },
   ];
 
   const specializations = [
