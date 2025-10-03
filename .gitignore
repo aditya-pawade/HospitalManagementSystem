@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment and sensitive files
+.env
+.env.local
+.env.production
+application-local.properties
+application-production.properties
+
+# Database
+*.db
+*.sqlite
