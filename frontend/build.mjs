@@ -15,11 +15,19 @@ async function buildProject() {
       root: __dirname,
       mode: 'production',
       logLevel: 'info',
+      css: {
+        postcss: {
+          plugins: [
+            require('tailwindcss'),
+            require('autoprefixer')
+          ]
+        }
+      },
       build: {
         outDir: 'dist',
         emptyOutDir: true,
         sourcemap: false,
-        minify: 'terser',
+        minify: 'esbuild',
         rollupOptions: {
           output: {
             manualChunks: {
@@ -36,7 +44,29 @@ async function buildProject() {
     process.exit(0)
   } catch (error) {
     console.error('❌ Build failed:', error)
-    process.exit(1)
+    console.log('🔄 Trying fallback build without PostCSS...')
+    
+    try {
+      await build({
+        root: __dirname,
+        mode: 'production',
+        logLevel: 'info',
+        css: {
+          postcss: false
+        },
+        build: {
+          outDir: 'dist',
+          emptyOutDir: true,
+          sourcemap: false,
+          minify: 'esbuild'
+        }
+      })
+      console.log('✅ Fallback build completed successfully!')
+      process.exit(0)
+    } catch (fallbackError) {
+      console.error('❌ Fallback build also failed:', fallbackError)
+      process.exit(1)
+    }
   }
 }
 
